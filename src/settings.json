@@ -1,0 +1,42 @@
+{
+    "REDIRECT_URI": "http://127.0.0.1:65010/authorize_callback",
+    "BOT_TIME_ZONE": "PT",
+    "TEAM_TIME_ZONE": "CT",
+    "POST_TIME": 1,
+    "TEAM_CODE": "cha",
+    "PREGAME_THREAD": false,
+    "POST_GAME_THREAD": true,
+    "STICKY": false,
+    "SUGGESTED_SORT": "new",
+    "MESSAGE": false,
+    "PRE_THREAD_SETTINGS": {
+        "PRE_THREAD_TAG": "PREGAME THREAD:",
+        "PRE_THREAD_TIME": "9AM",
+        "CONTENT": {
+            "PROBABLES": true,
+            "FIRST_PITCH": true
+        }
+    },
+    "THREAD_SETTINGS": {
+        "THREAD_TAG": "GAME THREAD:",
+        "CONTENT": {
+            "HEADER": true,
+            "BOX_SCORE": true,
+            "LINE_SCORE": true,
+            "SCORING_PLAYS": true,
+            "HIGHLIGHTS": true,
+            "FOOTER": false
+        }
+    },
+    "POST_THREAD_SETTINGS": {
+        "POST_THREAD_TAG": "POST GAME THREAD:",
+        "CONTENT": {
+            "HEADER": true,
+            "BOX_SCORE": true,
+            "LINE_SCORE": true,
+            "SCORING_PLAYS": true,
+            "HIGHLIGHTS": true,
+            "FOOTER": false
+        }
+    }
+}

@@ -1,0 +1,8 @@
+*.pyc
+venv/
+*sublime-*
+bin
+include
+lib
+pip-*
+.env
