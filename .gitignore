@@ -6,3 +6,4 @@ include
 lib
 pip-*
 .env
+Scripts
