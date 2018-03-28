@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 '''
 
 BASEBALL GAME THREAD BOT
@@ -9,7 +11,7 @@ Written by:
 Please contact us on Reddit or Github if you have any questions.
 
 '''
-import os
+
 import editor
 from datetime import datetime
 import timecheck
@@ -17,43 +19,31 @@ import time
 import simplejson as json
 import praw
 import urllib2
-from config import Config as BaseConfig
 
 class Bot:
 
     def __init__(self):
-        self.config = BaseConfig()
-        self.BOT_TIME_ZONE = None
-        self.TEAM_TIME_ZONE = None
-        self.POST_TIME = None
-        self.USERNAME = None
-        self.PASSWORD = None
-        self.SUBREDDIT = None
-        self.TEAM_CODE = None
-        self.PREGAME_THREAD = None
-        self.POST_GAME_THREAD = None
-        self.STICKY = None
-        self.SUGGESTED_SORT = None
-        self.MESSAGE = None
-        self.PRE_THREAD_SETTINGS = None
-        self.THREAD_SETTINGS = None
-        self.POST_THREAD_SETTINGS = None
+        return
 
     def read_settings(self):
+        import os
         cwd = os.path.dirname(os.path.realpath(__file__))
         with open(cwd + '/settings.json') as data:
             settings = json.load(data)
 
-            self.CLIENT_ID = self.config.CLIENT_ID
+            self.CLIENT_ID = settings.get('CLIENT_ID')
             if self.CLIENT_ID == None: return "Missing CLIENT_ID"
 
-            self.CLIENT_SECRET = self.config.CLIENT_SECRET
+            self.CLIENT_SECRET = settings.get('CLIENT_SECRET')
             if self.CLIENT_SECRET == None: return "Missing CLIENT_SECRET"
+
+            self.USER_AGENT = settings.get('USER_AGENT')
+            if self.USER_AGENT == None: return "Missing USER_AGENT"
 
             self.REDIRECT_URI = settings.get('REDIRECT_URI')
             if self.REDIRECT_URI == None: return "Missing REDIRECT_URI"
 
-            self.REFRESH_TOKEN = self.config.REFRESH_TOKEN
+            self.REFRESH_TOKEN = settings.get('REFRESH_TOKEN')
             if self.REFRESH_TOKEN == None: return "Missing REFRESH_TOKEN"
 
             self.BOT_TIME_ZONE = settings.get('BOT_TIME_ZONE')
@@ -65,7 +55,7 @@ class Bot:
             self.POST_TIME = settings.get('POST_TIME')
             if self.POST_TIME == None: return "Missing POST_TIME"
 
-            self.SUBREDDIT = self.config.SUBREDDIT
+            self.SUBREDDIT = settings.get('SUBREDDIT')
             if self.SUBREDDIT == None: return "Missing SUBREDDIT"
 
             self.TEAM_CODE = settings.get('TEAM_CODE')
@@ -85,6 +75,9 @@ class Bot:
 
             self.MESSAGE = settings.get('MESSAGE')
             if self.MESSAGE == None: return "Missing MESSAGE"
+
+            self.INBOXREPLIES = settings.get('INBOXREPLIES')
+            if self.INBOXREPLIES == None: return "Missing INBOXREPLIES"
 
             temp_settings = settings.get('PRE_THREAD_SETTINGS')
             content_settings = temp_settings.get('CONTENT')
@@ -121,12 +114,10 @@ class Bot:
             print error_msg
             return
 
-        r = praw.Reddit('OAuth Baseball-GDT V. 3.0.1'
-                        'ChiSox Posts Gamethreads to r/whitesox')
-        r.set_oauth_app_info(client_id=self.CLIENT_ID,
+        r = praw.Reddit(client_id=self.CLIENT_ID,
                             client_secret=self.CLIENT_SECRET,
-                            redirect_uri=self.REDIRECT_URI)
-        r.refresh_access_information(self.REFRESH_TOKEN)
+                            refresh_token=self.REFRESH_TOKEN,
+                            user_agent=self.USER_AGENT)
 
         if self.TEAM_TIME_ZONE == 'ET':
             time_info = (self.TEAM_TIME_ZONE,0)
@@ -161,7 +152,7 @@ class Bot:
             today = datetime.today()
 
             url = "http://gd2.mlb.com/components/game/mlb/"
-            url = url + "year_" + today.strftime("%Y") + "/month_" + today.strftime("%m") + "/day_" + today.strftime("%d") + "/"
+            url = url + "year_" + today.strftime("%Y") + "/month_" + today.strftime("%m") + "/day_" + today.strftime("%d")
 
             response = ""
             while not response:
@@ -185,8 +176,8 @@ class Bot:
                 while True:
                     try:
                         posted = False
-                        subreddit = r.get_subreddit(self.SUBREDDIT)
-                        for submission in subreddit.get_new():
+                        subreddit = r.subreddit(self.SUBREDDIT)
+                        for submission in subreddit.new():
                             if submission.title == title:
                                 print "Pregame thread already posted, getting submission..."
                                 submission.edit(edit.generate_pre_code(directories))
@@ -194,11 +185,16 @@ class Bot:
                                 break
                         if not posted:
                             print "Submitting pregame thread..."
-                            sub = r.submit(self.SUBREDDIT, title, edit.generate_pre_code(directories))
+                            if self.STICKY and 'sub' in locals():
+                                try:
+                                    sub.mod.sticky(state=False)
+                                except Exception, err:
+                                    print "Unsticky failed, continuing."
+                            sub = subreddit.submit(title, selftext=edit.generate_pre_code(directories), send_replies=self.INBOXREPLIES)
                             print "Pregame thread submitted..."
                             if self.STICKY:
                                 print "Stickying submission..."
-                                sub.sticky()
+                                sub.mod.sticky()
                                 print "Submission stickied..."
                             print "Sleeping for two minutes..."
                             print datetime.strftime(datetime.today(), "%d %I:%M %p")
@@ -216,29 +212,39 @@ class Bot:
                         check = datetime.today()
                         try:
                             posted = False
-                            subreddit = r.get_subreddit(self.SUBREDDIT)
-                            for submission in subreddit.get_new():
+                            subreddit = r.subreddit(self.SUBREDDIT)
+                            for submission in subreddit.new():
                                 if submission.title == title:
                                     print "Thread already posted, getting submission..."
                                     sub = submission
                                     posted = True
                                     break
                             if not posted:
+                                if self.STICKY and 'sub' in locals():
+                                    try:
+                                        sub.mod.sticky(state=False)
+                                    except Exception, err:
+                                        print "Unsticky failed, continuing."
+
                                 print "Submitting game thread..."
-                                sub = r.submit(self.SUBREDDIT, title, edit.generate_code(d,"game"))
+                                sub = subreddit.submit(title, selftext=edit.generate_code(d,"game"), send_replies=self.INBOXREPLIES)
                                 print "Game thread submitted..."
+
                                 if self.STICKY:
                                     print "Stickying submission..."
-                                    sub.sticky()
+                                    sub.mod.sticky()
                                     print "Submission stickied..."
-                                if self.SUGGESTED_SORT != None:
+
+                                if self.SUGGESTED_SORT != "":
                                     print "Setting suggested sort to " + self.SUGGESTED_SORT + "..."
-                                    sub.set_suggested_sort(self.SUGGESTED_SORT)
+                                    sub.mod.suggested_sort(self.SUGGESTED_SORT)
                                     print "Suggested sort set..."
+
                                 if self.MESSAGE:
                                     print "Messaging Baseballbot..."
-                                    r.send_message('baseballbot', 'Gamethread posted', sub.short_link)
+                                    r.redditor('baseballbot').message('Gamethread posted', sub.shortlink)
                                     print "Baseballbot messaged..."
+
                             print "Sleeping for two minutes..."
                             print datetime.strftime(check, "%d %I:%M %p")
                             time.sleep(5)
@@ -246,7 +252,9 @@ class Bot:
                         except Exception, err:
                             print err
                             time.sleep(300)
+
                     pgt_submit = False
+
                     while True:
                         check = datetime.today()
                         str = edit.generate_code(d,"game")
@@ -254,14 +262,12 @@ class Bot:
                             try:
                                 sub.edit(str)
                                 print "Edits submitted..."
-                                print "Sleeping for two minutes..."
-                                print datetime.strftime(check, "%d %I:%M %p")
-                                time.sleep(120)
                                 break
                             except Exception, err:
                                 print "Couldn't submit edits, trying again..."
                                 print datetime.strftime(check, "%d %I:%M %p")
                                 time.sleep(10)
+
                         if "|Decisions|" in str:
                             check = datetime.today()
                             print datetime.strftime(check, "%d %I:%M %p")
@@ -293,17 +299,28 @@ class Bot:
                             print "Game cancelled..."
                             pgt_submit = True
                         if pgt_submit:
+                            if self.STICKY and 'sub' in locals():
+                                try:
+                                    sub.mod.sticky(state=False)
+                                except Exception, err:
+                                    print "Unsticky failed, continuing."
+
                             if self.POST_GAME_THREAD:
                                 print "Submitting postgame thread..."
                                 posttitle = edit.generate_title(d,"post")
-                                sub = r.submit(self.SUBREDDIT, posttitle, edit.generate_code(d,"post"))
+                                sub = subreddit.submit(posttitle, selftext=edit.generate_code(d,"post"), send_replies=self.INBOXREPLIES)
                                 print "Postgame thread submitted..."
+
                                 if self.STICKY:
                                     print "Stickying submission..."
-                                    sub.sticky()
+                                    sub.mod.sticky()
                                     print "Submission stickied..."
+                            time.sleep(10)
                             break
-                        time.sleep(10)
+                        else:
+                            print "Sleeping for one minute..."
+                            print datetime.strftime(check, "%d %I:%M %p")
+                            time.sleep(60)
             if datetime.today().day == today.day:
                 timechecker.endofdaycheck()
 

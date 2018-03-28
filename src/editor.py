@@ -16,13 +16,13 @@ class Editor:
         (self.pre_thread_tag, self.pre_thread_time,
             (self.pre_probables, self.pre_first_pitch)
         ) = pre_thread_settings
-        (self.thread_tag, 
-            (self.header, self.box_score, 
+        (self.thread_tag,
+            (self.header, self.box_score,
              self.line_score, self.scoring_plays,
              self.highlights, self.footer)
         ) = thread_settings
-        (self.post_thread_tag, 
-            (self.post_header, self.post_box_score, 
+        (self.post_thread_tag,
+            (self.post_header, self.post_box_score,
              self.post_line_score, self.post_scoring_plays,
              self.post_highlights, self.post_footer)
         ) = post_thread_settings
@@ -110,7 +110,7 @@ class Editor:
             probables += "[" + game.get('home_team_name') + "](" + subs[0] + ")|" + home_pitcher + "|" + home_tv_broadcast + "|" + home_radio_broadcast + "|" + home_preview + "\n"
 
             probables += "\n"
-            
+
             return probables
         except:
             print "Missing data for probables, returning empty string..."
@@ -150,14 +150,14 @@ class Editor:
             if self.line_score: code = code + self.generate_linescore(files)
             if self.scoring_plays: code = code + self.generate_scoring_plays(files)
             if self.highlights: code = code + self.generate_highlights(files)
-            if self.footer: code = code + self.generate_footer()
+            if self.footer: code = code + self.footer + "\n\n"
         elif thread == "post":
             if self.post_header: code = code + self.generate_header(files)
             if self.post_box_score: code = code + self.generate_boxscore(files)
             if self.post_line_score: code = code + self.generate_linescore(files)
             if self.post_scoring_plays: code = code + self.generate_scoring_plays(files)
             if self.post_highlights: code = code + self.generate_highlights(files)
-            if self.post_footer: code = code + self.generate_footer()
+            if self.post_footer: code = code + self.post_footer + "\n\n"
         code = code + self.generate_status(files)
         print "Returning all code..."
         return code
@@ -194,7 +194,7 @@ class Editor:
             timezone = self.time_zone
             date_object = date_object - t
             header = "**First Pitch:** " + date_object.strftime("%I:%M %p ") + timezone + "\n\n"
-            header = header + "[Preview](http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + game.get('gameday_link') + ")\n"
+            header = header + "[Preview](http://mlb.mlb.com/mlb/gameday/index.jsp?gid=" + game.get('gameday_link') + ")\n\n"
             weather = files["plays"].get('data').get('game').get('weather')
             root = files["gamecenter"].getroot()
             broadcast = root.find('broadcast')
@@ -404,9 +404,9 @@ class Editor:
 
                 scoringplays = scoringplays + "|"
                 if int(s.get("home")) < int(s.get("away")):
-                    scoringplays = scoringplays + s.get("away") + "-" + s.get("home")
+                    scoringplays = scoringplays + s.get("away") + "-" + s.get("home") + " " + root.get("away_team").upper()
                 elif int(s.get("home")) > int(s.get("away")):
-                    scoringplays = scoringplays + s.get("home") + "-" + s.get("away")
+                    scoringplays = scoringplays + s.get("home") + "-" + s.get("away") + " " + root.get("home_team").upper()
                 else:
                     scoringplays = scoringplays + s.get("home") + "-" + s.get("away")
                 scoringplays = scoringplays + "\n"
@@ -426,12 +426,12 @@ class Editor:
             highlight = highlight + "|Team|Highlight|\n"
             highlight = highlight + "|:--|:--|\n"
             for v in video:
-                if v.get('type') == "video" and v.get('media-type') == "T":              
+                if v.get('type') == "video" and v.get('media-type') == "T":
                     try:
                         team = self.get_team(v.get('team_id'))
-                        highlight = highlight + "|" + team[0] + "|[" + v.find("headline").text + "](" + v.find("url").text + ")|\n"                   
+                        highlight = highlight + "|" + team[0] + "|[" + v.find("headline").text + "](" + v.find("url").text + ")|\n"
                     except:
-                        highlight = highlight + "|[](/MLB)|[" + v.find("headline").text + "](" + v.find("url").text + ")|\n"                     
+                        highlight = highlight + "|[](/MLB)|[" + v.find("headline").text + "](" + v.find("url").text + ")|\n"
             highlight = highlight + "\n\n"
             print "Returning highlight..."
             return highlight
@@ -542,12 +542,6 @@ class Editor:
             print "Missing data for status, returning blank text..."
             return status
 
-    def generate_footer(self):
-        footer = ""
-        footer += "**Remember to sort by new to keep up!**\n\n"
-        return footer
-
-
     def get_subreddits(self, homename, awayname):
         subreddits = []
         options = {
@@ -626,8 +620,8 @@ class Editor:
         notes.append(options[homename])
         notes.append(options[awayname])
         return notes
-        
-        
+
+
     def get_team(self, team_id):
         team = []
         options = {
@@ -654,13 +648,13 @@ class Editor:
             "137": "[SFG](/r/SFGiants)",
             "109": "[ARI](/r/azdiamondbacks)",
             "115": "[COL](/r/ColoradoRockies)",
-            "108": "[LAD](/r/Dodgers)",
+            "119": "[LAD](/r/Dodgers)",
             "135": "[SDP](/r/Padres)",
             "143": "[PHI](/r/Phillies)",
-            "120": "[NYM](/r/NewYorkMets)",
+            "121": "[NYM](/r/NewYorkMets)",
             "146": "[MIA](/r/letsgofish)",
-            "121": "[WSH](/r/Nationals)",
+            "120": "[WSH](/r/Nationals)",
             "144": "[ATL](/r/Braves)"
         }
         team.append(options[team_id])
-        return team        
+        return team
