@@ -113,9 +113,8 @@ class Standings(object):
 		r = praw.Reddit(client_id=self.config.CLIENT_ID,
 							client_secret=self.config.CLIENT_SECRET,
 							redirect_uri=self.config.REDIRECT_URI,
+							refresh_token=self.config.REFRESH_TOKEN,
 							user_agent='python:chisoxbot:v1.0.0 (by /u/logicalriot)')
-		# r.refresh_access_information(self.config.REFRESH_TOKEN)
-
 		# Get subreddit settings
 		subreddit = r.subreddit(self.config.SUBREDDIT)
 		mod = subreddit.mod
