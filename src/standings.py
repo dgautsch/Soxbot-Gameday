@@ -107,19 +107,19 @@ class Standings(object):
 
 	def postStandings(self):
 
-		print 'Beginning standings update...'
+		print 'Beginning standings update for r/' + self.config.SUBREDDIT + '...'
 
 		# Reddit user_agent
-		r = praw.Reddit('OAuth Baseball-GDT V. 3.0.1'
-                        'ChiSox Posts Gamethreads to r/whitesox')
-		r.set_oauth_app_info(client_id=self.config.CLIENT_ID,
+		r = praw.Reddit(client_id=self.config.CLIENT_ID,
 							client_secret=self.config.CLIENT_SECRET,
-							redirect_uri=self.config.REDIRECT_URI)
-		r.refresh_access_information(self.config.REFRESH_TOKEN)
+							redirect_uri=self.config.REDIRECT_URI,
+							user_agent='python:chisoxbot:v1.0.0 (by /u/logicalriot)')
+		# r.refresh_access_information(self.config.REFRESH_TOKEN)
 
 		# Get subreddit settings
-		subreddit = r.get_subreddit(self.config.SUBREDDIT)
-		settings = subreddit.get_settings()
+		subreddit = r.subreddit(self.config.SUBREDDIT)
+		mod = subreddit.mod
+		settings = mod.settings()
 
 		# store the old description
 		description = settings['description']
@@ -133,7 +133,7 @@ class Standings(object):
 		new_description.encode(encoding='UTF-8',errors='strict');
 
 		# Update Description
-		subreddit.update_settings(description=new_description)
+		mod.update(description=new_description)
 
 
 		print 'Standings updated...'

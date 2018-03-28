@@ -1,5 +1,6 @@
 {
-    "REDIRECT_URI": "http://127.0.0.1:65010/authorize_callback",
+    "USER_AGENT": "python:chisoxbot:v1.0.0 (by /u/logicalriot)",
+    "REDIRECT_URI": "http://127.0.0.1:8080",
     "BOT_TIME_ZONE": "PT",
     "TEAM_TIME_ZONE": "CT",
     "POST_TIME": 1,
@@ -9,6 +10,7 @@
     "STICKY": true,
     "SUGGESTED_SORT": "new",
     "MESSAGE": false,
+    "INBOXREPLIES": false,
     "PRE_THREAD_SETTINGS": {
         "PRE_THREAD_TAG": "PREGAME THREAD:",
         "PRE_THREAD_TIME": "9AM",

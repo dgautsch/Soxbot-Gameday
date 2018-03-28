@@ -19,10 +19,12 @@ import time
 import simplejson as json
 import praw
 import urllib2
+from config import Config as BaseConfig
 
 class Bot:
 
     def __init__(self):
+        self.config = BaseConfig()
         return
 
     def read_settings(self):
@@ -31,10 +33,10 @@ class Bot:
         with open(cwd + '/settings.json') as data:
             settings = json.load(data)
 
-            self.CLIENT_ID = settings.get('CLIENT_ID')
+            self.CLIENT_ID = self.config.CLIENT_ID
             if self.CLIENT_ID == None: return "Missing CLIENT_ID"
 
-            self.CLIENT_SECRET = settings.get('CLIENT_SECRET')
+            self.CLIENT_SECRET = self.config.CLIENT_SECRET
             if self.CLIENT_SECRET == None: return "Missing CLIENT_SECRET"
 
             self.USER_AGENT = settings.get('USER_AGENT')
@@ -43,7 +45,7 @@ class Bot:
             self.REDIRECT_URI = settings.get('REDIRECT_URI')
             if self.REDIRECT_URI == None: return "Missing REDIRECT_URI"
 
-            self.REFRESH_TOKEN = settings.get('REFRESH_TOKEN')
+            self.REFRESH_TOKEN = self.config.REFRESH_TOKEN
             if self.REFRESH_TOKEN == None: return "Missing REFRESH_TOKEN"
 
             self.BOT_TIME_ZONE = settings.get('BOT_TIME_ZONE')
@@ -55,7 +57,7 @@ class Bot:
             self.POST_TIME = settings.get('POST_TIME')
             if self.POST_TIME == None: return "Missing POST_TIME"
 
-            self.SUBREDDIT = settings.get('SUBREDDIT')
+            self.SUBREDDIT = self.config.SUBREDDIT
             if self.SUBREDDIT == None: return "Missing SUBREDDIT"
 
             self.TEAM_CODE = settings.get('TEAM_CODE')

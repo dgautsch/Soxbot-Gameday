@@ -7,3 +7,4 @@ lib
 pip-*
 .env
 Scripts
+tcl
