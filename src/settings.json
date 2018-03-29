@@ -5,7 +5,7 @@
     "TEAM_TIME_ZONE": "CT",
     "POST_TIME": 1,
     "TEAM_CODE": "cha",
-    "PREGAME_THREAD": false,
+    "PREGAME_THREAD": true,
     "POST_GAME_THREAD": false,
     "STICKY": true,
     "SUGGESTED_SORT": "new",
