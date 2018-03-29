@@ -171,7 +171,7 @@ class Bot:
 
             teamGames = []
             for game in todayGames:
-                if game["teams"]["away"]["team"]["id"] == int(self.TEAM_CODE) or game["teams"]["home"]["team"]["id"] == int(self.TEAM_CODE):
+                if game["teams"]["away"]["team"]["id"] == self.TEAM_CODE or game["teams"]["home"]["team"]["id"] == self.TEAM_CODE:
                     teamGames.append(baseURL + game["link"])
 
             # TODO: FIX THIS
