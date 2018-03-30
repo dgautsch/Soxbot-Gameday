@@ -61,8 +61,8 @@
     },
     "POST_THREAD": {
         "ENABLED": true,
-        "WIN_TAG": "OUR TEAM WON:",
-        "LOSS_TAG": "OUR TEAM LOST:",
+        "WIN_TAG": "WHITE SOX WIN:",
+        "LOSS_TAG": "GAME RESULTS:",
         "OTHER_TAG": "POST GAME THREAD:",
         "SUGGESTED_SORT": "new",
         "INBOX_REPLIES": false,
