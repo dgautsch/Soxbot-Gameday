@@ -9,7 +9,7 @@
     "SERIES_IN_TITLES": true,
     "LOG_LEVEL": 2,
     "OFF_THREAD": {
-        "ENABLED": false,
+        "ENABLED": true,
         "TAG": "OFF DAY THREAD:",
         "TIME": "9AM",
         "SUGGESTED_SORT": "new",
