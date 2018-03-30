@@ -1,0 +1,5 @@
+gamebot: python -u src/main.py
+schedule: python -u src/schedule.py
+standings: python -u src/standings.py
+tweet: python -u src/tweet.py
+test: python -u src/test.py
