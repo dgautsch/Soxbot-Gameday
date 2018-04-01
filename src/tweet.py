@@ -16,5 +16,5 @@ class Tweet(object):
                                self.config.TWT_ACCESS_SECRET)
 
     def post(self, message):
-        print('Posting tweet' + message)
+        print('Posting tweet: ' + message)
         self.api.PostUpdate(message)
