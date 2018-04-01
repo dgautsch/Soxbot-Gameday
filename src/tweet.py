@@ -10,6 +10,7 @@ class Tweet(object):
     def __init__(self):
         super(Tweet, self).__init__()
         self.config = BaseConfig()
+        self.config.checkAuthSettings()
         self.api = twitter.Api(self.config.TWT_CONSUMER_KEY,
                                self.config.TWT_CONSUMER_SECRET,
                                self.config.TWT_ACCESS_TOKEN,
