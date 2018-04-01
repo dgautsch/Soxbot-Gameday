@@ -51,7 +51,6 @@ class Bot:
             if self.SETTINGS.get('USER_AGENT') == None:
                 warnings.append('Missing USER_AGENT, using default ("")...')
                 self.SETTINGS.update({'USER_AGENT' : ''})
-            self.SETTINGS.update({'FULL_USER_AGENT' : "OAuth Baseball Game Thread Bot for Reddit v" + self.VERSION + " https://github.com/toddrob99/Baseball-GDT-Bot " + self.SETTINGS.get('USER_AGENT')})
 
             if self.config.SUBREDDIT == None:
                 fatal_errors.append('Missing SUBREDDIT')
@@ -334,6 +333,12 @@ class Bot:
             if self.SETTINGS.get('POST_THREAD').get('CONTENT').get('NEXT_GAME') == None:
                 warnings.append('Missing POST_THREAD : CONTENT : NEXT_GAME, using default (true)...')
                 self.SETTINGS['POST_THREAD']['CONTENT'].update({'NEXT_GAME' : True})
+            if self.SETTINGS.get('TWITTER').get('ENABLED') == None:
+                warnings.append('Missing TWITTER : ENABLED, using default (false)')
+                self.SETTINGS['TWITTER']['ENABLED'].update({'ENABLED' : False })
+            if self.SETTINGS.get('TWITTER').get('HASHTAGS') == None:
+                warnings.append('Missing TWITTER : HASHTAGS, using default #baseball #reddit')
+                self.SETTINGS['TWITTER']['HASHTAGS'].update({'HASHTAGS' : '#baseball #reddit' })
 
             if self.SETTINGS.get('LOG_LEVEL')>3: print "Settings:",self.SETTINGS
 
@@ -391,7 +396,7 @@ class Bot:
 
         timechecker = timecheck.TimeCheck(time_before, self.SETTINGS.get('LOG_LEVEL'), self.SETTINGS.get('GAME_THREAD').get('HOLD_DH_GAME2_THREAD'))
 
-        if self.SETTINGS.get('LOG_LEVEL')>2: print "Initiating PRAW instance with User Agent:",self.SETTINGS.get('FULL_USER_AGENT')
+        if self.SETTINGS.get('LOG_LEVEL')>2: print "Initiating PRAW instance with User Agent:",self.SETTINGS.get('USER_AGENT')
         r = praw.Reddit(client_id=self.config.CLIENT_ID,
                         client_secret=self.config.CLIENT_SECRET,
                         refresh_token=self.config.REFRESH_TOKEN,
@@ -449,7 +454,7 @@ class Bot:
             if self.SETTINGS.get('LOG_LEVEL')>2: print "stale games:",stale_games
 
             today = datetime.today()
-            #today = datetime.strptime('2018-02-22','%Y-%m-%d') # leave commented unless testing
+            # today = datetime.strptime('2018-03-29','%Y-%m-%d') # leave commented unless testing
 
             baseurl = "http://gd2.mlb.com/components/game/mlb/"
             todayurl = baseurl + "year_" + today.strftime("%Y") + "/month_" + today.strftime("%m") + "/day_" + today.strftime("%d") + "/"
@@ -810,7 +815,14 @@ class Bot:
                                     threadtext = threads[k].get('game') + lastupdate
                                     game.update({'gamesub' : subreddit.submit(game.get('gametitle'), selftext=threadtext, send_replies=self.SETTINGS.get('GAME_THREAD').get('INBOX_REPLIES')), 'status' : edit.get_status(game.get('url'))})
                                     # Posting to twitter
-                                    self.t.post('The ' + game.get('away_team_name') + ' are playing the ' + game.get('home_team_name') + '! Join us on /r/' + subreddit.display_name + ' ' + game.get('gamesub').shortlink + ' #baseball #reddit')
+                                    if self.SETTINGS.get('TWITTER').get('ENABLED'):
+                                        self.t.post('The ' + 
+                                            game.get('away_team_name') 
+                                            + ' are playing the ' 
+                                            + game.get('home_team_name') 
+                                            + '! Join us on /r/' + subreddit.display_name 
+                                            + ' ' + game.get('gamesub').shortlink + ' ' 
+                                            + self.SETTINGS.get('TWITTER').get('HASHTAGS'))
                                     if self.SETTINGS.get('LOG_LEVEL')>1: print "Game thread submitted..."
 
                                     if self.SETTINGS.get('STICKY'):

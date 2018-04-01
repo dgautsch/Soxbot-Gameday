@@ -913,7 +913,7 @@ class Editor:
         if thisurl==None: thisurl=""
         base_url = "http://gd2.mlb.com/components/game/mlb/"
         today = datetime.today().date()
-        #today = datetime.strptime('2018-02-23','%Y-%m-%d').date() # leave commented unless testing
+        # today = datetime.strptime('2018-03-31','%Y-%m-%d').date() # leave commented unless testing
         for d in (today + timedelta(days=x) for x in range(0, check_days)):
             next_game = {}
             if self.SETTINGS.get('LOG_LEVEL')>3: print "Searching for games on",d

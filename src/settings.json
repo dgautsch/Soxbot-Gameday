@@ -76,5 +76,9 @@
             "THEATER_LINK": true,
             "NEXT_GAME": true
         }
+    },
+    "TWITTER" : {
+        "ENABLED": true,
+        "HASHTAGS": "#reddit #baseball #whitesox #rbdq #chicagobaseball #mlb"
     }
 }
