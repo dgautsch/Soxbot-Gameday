@@ -1,12 +1,14 @@
-# README ChiSoxBot
+# ChiSoxBot
 
-## Using VIRTUALENV
-http://docs.python-guide.org/en/latest/dev/virtualenvs/
+Runs the standings and Gameday Threads at /r/whitesox.
 
-## Push to Heroku
+# Thank You
 
-	git push heroku master
+This bot wouldn't be possible without the great work done by
 
-# Contribution
+mattabullock/Baseball-GDT-Bot
 
-Fork this repo and pull request back to have changes considered for release.
+toddrob99/Baseball-GDT-Bot
+
+
+
