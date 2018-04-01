@@ -19,6 +19,7 @@ import time
 import simplejson as json
 import praw
 import urllib2
+import tweet
 from config import Config as BaseConfig
 
 
@@ -28,6 +29,7 @@ class Bot:
         self.config = BaseConfig()
         self.VERSION = '5.0.4'
         self.SETTINGS = {}
+        self.t = tweet.Tweet()
 
     def read_settings(self):
         import os
@@ -416,7 +418,7 @@ class Bot:
             else: stale_games = games
             if self.SETTINGS.get('STICKY') and len(stale_games)==0:
                 try:
-                    sticky1 = r.subreddit(self.SETTINGS.get('SUBREDDIT')).sticky(1)
+                    sticky1 = r.subreddit(self.config.SUBREDDIT).sticky(1)
                     if (sticky1.author == r.user.me() and not sticky1.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y")) and 
                                                         not sticky1.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - DOUBLEHEADER") and
                                                         not sticky1.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - GAME 1") and
@@ -429,7 +431,7 @@ class Bot:
                                                                                     self.SETTINGS.get('POST_THREAD').get('OTHER_TAG')))):
                         stale_games[len(stale_games)+1] = {'gamesub' : sticky1, 'gametitle' : sticky1.title}
                         if self.SETTINGS.get('LOG_LEVEL')>1: print "Found stale thread in top sticky slot..."
-                    sticky2 = r.subreddit(self.SETTINGS.get('SUBREDDIT')).sticky(2)
+                    sticky2 = r.subreddit(self.config.SUBREDDIT).sticky(2)
                     if (sticky2.author == r.user.me() and not sticky2.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y")) and 
                                                         not sticky2.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - DOUBLEHEADER") and 
                                                         not sticky2.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - GAME 1") and 
@@ -541,7 +543,7 @@ class Bot:
                         offday.update({'offmessage' : "No game today. Feel free to discuss whatever you want in this thread."})
                     else: offday.update({'offmessage' : self.SETTINGS.get('OFF_THREAD').get('FOOTER')})
                 try:
-                    subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                    subreddit = r.subreddit(self.config.SUBREDDIT)
                     for submission in subreddit.new():
                         if submission.title == offday.get('offtitle'):
                             if self.SETTINGS.get('LOG_LEVEL')>1: print "Offday thread already posted, getting submission..."
@@ -623,7 +625,7 @@ class Bot:
                     game.update({'pretitle': edit.generate_title(game.get('url'),"pre",game.get('doubleheader'),game.get('game_nbr'))})
                     while True:
                         try:
-                            subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                            subreddit = r.subreddit(self.config.SUBREDDIT)
                             if self.SETTINGS.get('STICKY') and len(stale_games):
                                 if self.SETTINGS.get('LOG_LEVEL')>1: print "Unstickying stale threads..."
                                 try:
@@ -746,7 +748,6 @@ class Bot:
                 if self.SETTINGS.get('LOG_LEVEL')>2: print "Generating game thread titles for all games..."
                 for k,game in games.items():
                     game.update({'gametitle': edit.generate_title(game.get('url'),'game',game.get('doubleheader'),game.get('game_nbr'))})
-
             while len(games) > 0:
                 for k,game in games.items():
                     if self.SETTINGS.get('LOG_LEVEL')>2 and len(games)>1: print "Game",k,"check"
@@ -761,7 +762,7 @@ class Bot:
                         if not game.get('final'):
                             check = datetime.today()
                             try:
-                                subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                                subreddit = r.subreddit(self.config.SUBREDDIT)
                                 if self.SETTINGS.get('STICKY'):
                                     if len(stale_games):
                                         if self.SETTINGS.get('LOG_LEVEL')>1: print "Unstickying stale threads..."
@@ -808,6 +809,8 @@ class Bot:
                                     else: lastupdate = ""
                                     threadtext = threads[k].get('game') + lastupdate
                                     game.update({'gamesub' : subreddit.submit(game.get('gametitle'), selftext=threadtext, send_replies=self.SETTINGS.get('GAME_THREAD').get('INBOX_REPLIES')), 'status' : edit.get_status(game.get('url'))})
+                                    # Posting to twitter
+                                    self.t.post('The ' + game.get('away_team_name') + ' are playing the ' + game.get('home_team_name') + '! Join us on /r/' + subreddit.display_name + ' ' + game.get('gamesub').shortlink + ' #baseball #reddit')
                                     if self.SETTINGS.get('LOG_LEVEL')>1: print "Game thread submitted..."
 
                                     if self.SETTINGS.get('STICKY'):
@@ -894,7 +897,7 @@ class Bot:
                                 if self.SETTINGS.get('POST_THREAD').get('ENABLED'):
                                     try:
                                         game.update({'posttitle' : edit.generate_title(game.get('url'),"post",game.get('doubleheader'),game.get('game_nbr'))})
-                                        subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                                        subreddit = r.subreddit(self.config.SUBREDDIT)
                                         if self.SETTINGS.get('STICKY'):
                                             if game.get('presub'):
                                                 if self.SETTINGS.get('LOG_LEVEL')>1: print "Unstickying Game",k,"pregame thread..."
