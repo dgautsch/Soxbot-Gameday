@@ -335,10 +335,10 @@ class Bot:
                 self.SETTINGS['POST_THREAD']['CONTENT'].update({'NEXT_GAME' : True})
             if self.SETTINGS.get('TWITTER').get('ENABLED') == None:
                 warnings.append('Missing TWITTER : ENABLED, using default (false)')
-                self.SETTINGS['TWITTER']['ENABLED'].update({'ENABLED' : False })
+                self.SETTINGS['TWITTER'].update({'ENABLED' : False })
             if self.SETTINGS.get('TWITTER').get('HASHTAGS') == None:
                 warnings.append('Missing TWITTER : HASHTAGS, using default #baseball #reddit')
-                self.SETTINGS['TWITTER']['HASHTAGS'].update({'HASHTAGS' : '#baseball #reddit' })
+                self.SETTINGS['TWITTER'].update({'HASHTAGS' : '#baseball #reddit' })
 
             if self.SETTINGS.get('LOG_LEVEL')>3: print "Settings:",self.SETTINGS
 
