@@ -19,6 +19,7 @@ import time
 import simplejson as json
 import praw
 import urllib2
+import tweet
 from config import Config as BaseConfig
 
 
@@ -28,6 +29,7 @@ class Bot:
         self.config = BaseConfig()
         self.VERSION = '5.0.4'
         self.SETTINGS = {}
+        self.t = tweet.Tweet()
 
     def read_settings(self):
         import os
@@ -49,7 +51,6 @@ class Bot:
             if self.SETTINGS.get('USER_AGENT') == None:
                 warnings.append('Missing USER_AGENT, using default ("")...')
                 self.SETTINGS.update({'USER_AGENT' : ''})
-            self.SETTINGS.update({'FULL_USER_AGENT' : "OAuth Baseball Game Thread Bot for Reddit v" + self.VERSION + " https://github.com/toddrob99/Baseball-GDT-Bot " + self.SETTINGS.get('USER_AGENT')})
 
             if self.config.SUBREDDIT == None:
                 fatal_errors.append('Missing SUBREDDIT')
@@ -332,6 +333,12 @@ class Bot:
             if self.SETTINGS.get('POST_THREAD').get('CONTENT').get('NEXT_GAME') == None:
                 warnings.append('Missing POST_THREAD : CONTENT : NEXT_GAME, using default (true)...')
                 self.SETTINGS['POST_THREAD']['CONTENT'].update({'NEXT_GAME' : True})
+            if self.SETTINGS.get('TWITTER').get('ENABLED') == None:
+                warnings.append('Missing TWITTER : ENABLED, using default (false)')
+                self.SETTINGS['TWITTER']['ENABLED'].update({'ENABLED' : False })
+            if self.SETTINGS.get('TWITTER').get('HASHTAGS') == None:
+                warnings.append('Missing TWITTER : HASHTAGS, using default #baseball #reddit')
+                self.SETTINGS['TWITTER']['HASHTAGS'].update({'HASHTAGS' : '#baseball #reddit' })
 
             if self.SETTINGS.get('LOG_LEVEL')>3: print "Settings:",self.SETTINGS
 
@@ -389,7 +396,7 @@ class Bot:
 
         timechecker = timecheck.TimeCheck(time_before, self.SETTINGS.get('LOG_LEVEL'), self.SETTINGS.get('GAME_THREAD').get('HOLD_DH_GAME2_THREAD'))
 
-        if self.SETTINGS.get('LOG_LEVEL')>2: print "Initiating PRAW instance with User Agent:",self.SETTINGS.get('FULL_USER_AGENT')
+        if self.SETTINGS.get('LOG_LEVEL')>2: print "Initiating PRAW instance with User Agent:",self.SETTINGS.get('USER_AGENT')
         r = praw.Reddit(client_id=self.config.CLIENT_ID,
                         client_secret=self.config.CLIENT_SECRET,
                         refresh_token=self.config.REFRESH_TOKEN,
@@ -416,7 +423,7 @@ class Bot:
             else: stale_games = games
             if self.SETTINGS.get('STICKY') and len(stale_games)==0:
                 try:
-                    sticky1 = r.subreddit(self.SETTINGS.get('SUBREDDIT')).sticky(1)
+                    sticky1 = r.subreddit(self.config.SUBREDDIT).sticky(1)
                     if (sticky1.author == r.user.me() and not sticky1.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y")) and 
                                                         not sticky1.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - DOUBLEHEADER") and
                                                         not sticky1.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - GAME 1") and
@@ -429,7 +436,7 @@ class Bot:
                                                                                     self.SETTINGS.get('POST_THREAD').get('OTHER_TAG')))):
                         stale_games[len(stale_games)+1] = {'gamesub' : sticky1, 'gametitle' : sticky1.title}
                         if self.SETTINGS.get('LOG_LEVEL')>1: print "Found stale thread in top sticky slot..."
-                    sticky2 = r.subreddit(self.SETTINGS.get('SUBREDDIT')).sticky(2)
+                    sticky2 = r.subreddit(self.config.SUBREDDIT).sticky(2)
                     if (sticky2.author == r.user.me() and not sticky2.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y")) and 
                                                         not sticky2.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - DOUBLEHEADER") and 
                                                         not sticky2.title.endswith(datetime.strftime(datetime.today(),"%B %d, %Y") + " - GAME 1") and 
@@ -447,7 +454,7 @@ class Bot:
             if self.SETTINGS.get('LOG_LEVEL')>2: print "stale games:",stale_games
 
             today = datetime.today()
-            #today = datetime.strptime('2018-02-22','%Y-%m-%d') # leave commented unless testing
+            # today = datetime.strptime('2018-03-29','%Y-%m-%d') # leave commented unless testing
 
             baseurl = "http://gd2.mlb.com/components/game/mlb/"
             todayurl = baseurl + "year_" + today.strftime("%Y") + "/month_" + today.strftime("%m") + "/day_" + today.strftime("%d") + "/"
@@ -541,7 +548,7 @@ class Bot:
                         offday.update({'offmessage' : "No game today. Feel free to discuss whatever you want in this thread."})
                     else: offday.update({'offmessage' : self.SETTINGS.get('OFF_THREAD').get('FOOTER')})
                 try:
-                    subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                    subreddit = r.subreddit(self.config.SUBREDDIT)
                     for submission in subreddit.new():
                         if submission.title == offday.get('offtitle'):
                             if self.SETTINGS.get('LOG_LEVEL')>1: print "Offday thread already posted, getting submission..."
@@ -623,7 +630,7 @@ class Bot:
                     game.update({'pretitle': edit.generate_title(game.get('url'),"pre",game.get('doubleheader'),game.get('game_nbr'))})
                     while True:
                         try:
-                            subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                            subreddit = r.subreddit(self.config.SUBREDDIT)
                             if self.SETTINGS.get('STICKY') and len(stale_games):
                                 if self.SETTINGS.get('LOG_LEVEL')>1: print "Unstickying stale threads..."
                                 try:
@@ -746,7 +753,6 @@ class Bot:
                 if self.SETTINGS.get('LOG_LEVEL')>2: print "Generating game thread titles for all games..."
                 for k,game in games.items():
                     game.update({'gametitle': edit.generate_title(game.get('url'),'game',game.get('doubleheader'),game.get('game_nbr'))})
-
             while len(games) > 0:
                 for k,game in games.items():
                     if self.SETTINGS.get('LOG_LEVEL')>2 and len(games)>1: print "Game",k,"check"
@@ -761,7 +767,7 @@ class Bot:
                         if not game.get('final'):
                             check = datetime.today()
                             try:
-                                subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                                subreddit = r.subreddit(self.config.SUBREDDIT)
                                 if self.SETTINGS.get('STICKY'):
                                     if len(stale_games):
                                         if self.SETTINGS.get('LOG_LEVEL')>1: print "Unstickying stale threads..."
@@ -808,6 +814,15 @@ class Bot:
                                     else: lastupdate = ""
                                     threadtext = threads[k].get('game') + lastupdate
                                     game.update({'gamesub' : subreddit.submit(game.get('gametitle'), selftext=threadtext, send_replies=self.SETTINGS.get('GAME_THREAD').get('INBOX_REPLIES')), 'status' : edit.get_status(game.get('url'))})
+                                    # Posting to twitter
+                                    if self.SETTINGS.get('TWITTER').get('ENABLED'):
+                                        self.t.post('The ' + 
+                                            game.get('away_team_name') 
+                                            + ' are playing the ' 
+                                            + game.get('home_team_name') 
+                                            + '! Join us on /r/' + subreddit.display_name 
+                                            + ' ' + game.get('gamesub').shortlink + ' ' 
+                                            + self.SETTINGS.get('TWITTER').get('HASHTAGS'))
                                     if self.SETTINGS.get('LOG_LEVEL')>1: print "Game thread submitted..."
 
                                     if self.SETTINGS.get('STICKY'):
@@ -894,7 +909,7 @@ class Bot:
                                 if self.SETTINGS.get('POST_THREAD').get('ENABLED'):
                                     try:
                                         game.update({'posttitle' : edit.generate_title(game.get('url'),"post",game.get('doubleheader'),game.get('game_nbr'))})
-                                        subreddit = r.subreddit(self.SETTINGS.get('SUBREDDIT'))
+                                        subreddit = r.subreddit(self.config.SUBREDDIT)
                                         if self.SETTINGS.get('STICKY'):
                                             if game.get('presub'):
                                                 if self.SETTINGS.get('LOG_LEVEL')>1: print "Unstickying Game",k,"pregame thread..."

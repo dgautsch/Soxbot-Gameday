@@ -1,6 +1,5 @@
 {
     "USER_AGENT": "python:chisoxbot:v1.0.0 (by /u/logicalriot)",
-    "SUBREDDIT": "whitesox",
     "TEAM_CODE": "cha",
     "BOT_TIME_ZONE": "PT",
     "TEAM_TIME_ZONE": "CT",
@@ -77,5 +76,9 @@
             "THEATER_LINK": true,
             "NEXT_GAME": true
         }
+    },
+    "TWITTER" : {
+        "ENABLED": true,
+        "HASHTAGS": "#reddit #baseball #whitesox #rbdq #chicagobaseball #mlb"
     }
 }

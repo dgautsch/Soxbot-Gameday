@@ -5,3 +5,4 @@ six==1.9.0
 update-checker==0.11
 python-dateutil==2.5.0
 pytz==2015.7
+python-twitter==3.4.1
